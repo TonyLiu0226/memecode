@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Memecode - An app that motivates you to do your daily leetcode before you start gooning off
 
-## Getting Started
+## Features
 
-First, run the development server:
+- Google OAuth authentication with Supabase
+- Integration with LeetCode API to generate questions that the user has not solved before
+- Unlocks the ability to view daily memes upon completion of the generated question
+- Difficulty filter to target questions towards user ability
+- Modern UI with Tailwind CSS
+
+### Future features
+- Integration with video APIs (TikTok, YouTube) to allow users to watch videos after solving questions
+- Filter questions by topic or company
+- Integrated IDE to allow solving of questions from the web interface instead of redirecting users to LeetCode
+
+## Setup Instructions
+
+### 1. Supabase Setup
+
+1. Go to [Supabase](https://supabase.com) and create a new project
+2. In your Supabase dashboard, go to **Authentication > Providers**
+3. Enable **Google** provider and configure it:
+   - Add your Google OAuth credentials
+   - Set the redirect URL to: `http://localhost:3000/auth/callback` (for development)
+4. Go to **Settings > API** and copy your:
+   - Project URL
+   - Anon public key
+
+### 2. Environment Variables
+
+Create a `.env.local` file in the root directory:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+### 3. Google OAuth Setup
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable the Google+ API
+4. Go to **Credentials** and create OAuth 2.0 Client IDs
+5. Add authorized redirect URIs:
+   - `http://localhost:3000/auth/callback` (development)
+   - `https://yourdomain.com/auth/callback` (production)
+6. Copy the Client ID and Client Secret to your Supabase Google provider settings
+
+### 4. Install Dependencies
+
+```bash
+npm install
+```
+
+### 5. Run the Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to see the application.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+├── app/
+│   ├── auth/
+│   │   ├── callback/
+│   │   │   └── route.ts          # OAuth callback handler
+│   │   └── auth-code-error/
+│   │       └── page.tsx          # Auth error page
+│   ├── dashboard/
+│   │   └── page.tsx              # Protected dashboard page
+│   ├── layout.tsx                # Root layout
+│   └── page.tsx                  # Home page
+├── components/
+│   └── AuthButton.tsx            # Authentication component
+├── lib/
+│   ├── supabase.ts               # Basic Supabase client
+│   ├── supabase-client.ts        # Browser Supabase client
+│   └── supabase-server.ts        # Server Supabase client
+└── middleware.ts                 # Authentication middleware
+```
 
-## Learn More
+## Deployment
 
-To learn more about Next.js, take a look at the following resources:
+1. Set up your production Supabase project
+2. Update environment variables with production URLs
+3. Configure Google OAuth with production redirect URLs
+4. Deploy to your preferred platform (Vercel, Netlify, etc.)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Technologies Used
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Next.js 15** - React framework with App Router
+- **Supabase** - Backend-as-a-Service for authentication
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Utility-first CSS framework
+- **Google OAuth** - Authentication provider
