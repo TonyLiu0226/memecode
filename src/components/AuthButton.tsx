@@ -3,11 +3,13 @@
 import { createClient } from '@/lib/supabase-client'
 import { useEffect, useState } from 'react'
 import { User } from '@supabase/supabase-js'
+import { useRouter } from 'next/navigation'
 
 export default function AuthButton() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
+  const router = useRouter()
 
   useEffect(() => {
     const getUser = async () => {
@@ -39,6 +41,8 @@ export default function AuthButton() {
 
   const signOut = async () => {
     await supabase.auth.signOut()
+    router.push('/')
+    router.refresh()
   }
 
   if (loading) {
@@ -53,7 +57,7 @@ export default function AuthButton() {
         </span>
         <button
           onClick={signOut}
-          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors cursor-pointer"
         >
           Sign Out
         </button>
@@ -64,7 +68,7 @@ export default function AuthButton() {
   return (
     <button
       onClick={signInWithGoogle}
-      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors cursor-pointer"
     >
       Sign in with Google
     </button>

@@ -4,11 +4,13 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase-client'
 import { useEffect, useState } from 'react'
 import { User } from '@supabase/supabase-js'
+import { useRouter } from 'next/navigation'
 
 export default function Navigation() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
+  const router = useRouter()
 
   useEffect(() => {
     const getUser = async () => {
@@ -31,6 +33,8 @@ export default function Navigation() {
 
   const signOut = async () => {
     await supabase.auth.signOut()
+    router.push('/')
+    router.refresh()
   }
 
   if (loading) {
@@ -79,7 +83,7 @@ export default function Navigation() {
                 </span>
                 <button
                   onClick={signOut}
-                  className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                  className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors cursor-pointer"
                 >
                   Sign Out
                 </button>
@@ -87,7 +91,7 @@ export default function Navigation() {
             ) : (
               <Link
                 href="/"
-                className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
+                className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
               >
                 Sign In
               </Link>
