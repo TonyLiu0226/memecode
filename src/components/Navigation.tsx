@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase-client'
 import { useEffect, useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
-import AuthButton from './AuthButton'
+import AuthButton from './buttons/AuthButton'
 
 export default function Navigation() {
   const [user, setUser] = useState<User | null>(null)
