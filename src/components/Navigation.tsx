@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase-client'
 import { useEffect, useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
+import AuthButton from './AuthButton'
 
 export default function Navigation() {
   const [user, setUser] = useState<User | null>(null)
@@ -72,6 +73,12 @@ export default function Navigation() {
                 >
                   Dashboard
                 </Link>
+                <Link
+                  href="/settings"
+                  className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  Settings
+                </Link>
               </div>
             )}
           </div>
@@ -83,18 +90,13 @@ export default function Navigation() {
                 </span>
                 <button
                   onClick={signOut}
-                  className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors cursor-pointer"
+                  className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
                 >
                   Sign Out
                 </button>
               </div>
             ) : (
-              <Link
-                href="/"
-                className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
-              >
-                Sign In
-              </Link>
+              <AuthButton />
             )}
           </div>
         </div>
