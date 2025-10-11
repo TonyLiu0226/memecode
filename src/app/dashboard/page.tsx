@@ -5,6 +5,7 @@ import QuestionTracker from '@/components/trackers/QuestionTracker'
 import ProgressTracker from '@/components/trackers/ProgressTracker'
 import MemeTracker from '@/components/trackers/MemeTracker'
 import { generateQuestion } from '@/app/actions'
+import QuestionInfo from '@/components/QuestionInfo'
 
 export default async function Dashboard() {
   const supabase = await createClient()
@@ -34,9 +35,8 @@ export default async function Dashboard() {
             <ProgressTracker userdata={userdata} />
             <MemeTracker userdata={userdata} />
           </div>
-          <div>
-            <h2>Question of the Day</h2>
-            {}
+          <div className="align-center justify-center mt-10 w-full">
+            <QuestionInfo />
           </div>
         </div>
       </div>

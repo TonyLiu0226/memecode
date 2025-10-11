@@ -7,9 +7,9 @@ export default function QuestionTracker(props: {
     lc_session: string,
     csrftoken: string,
     data: UserResult
-    generateQuestion: (args: { lc_session: string; csrftoken: string; difficulties: string[] }) => Promise<{ title?: string; titleSlug?: string; difficulty?: string; isPaidOnly?: boolean; status?: string; topicTags?: TopicTag[] | null }>
+    generateQuestion: (args: { lc_session: string; csrftoken: string; difficulties: string[] }) => Promise<{ title?: string; titleSlug?: string; difficulty?: string; isPaidOnly?: boolean; status?: string; topicTags?: TopicTag[] | null, acRate?: number }>
 }) {
-    const handleResult = (question: { title?: string; titleSlug?: string; difficulty?: string; isPaidOnly?: boolean; status?: string; topicTags?: TopicTag[] | null }) => {
+    const handleResult = (question: { title?: string; titleSlug?: string; difficulty?: string; isPaidOnly?: boolean; status?: string; topicTags?: TopicTag[] | null, acRate?: number }) => {
         if (typeof window === 'undefined') return
         try {
             const payload = {
@@ -19,8 +19,11 @@ export default function QuestionTracker(props: {
                 isPaidOnly: question?.isPaidOnly || false,
                 status: question?.status || '',
                 topicTags: question?.topicTags || [],
+                acRate: question?.acRate || 0,
             }
             localStorage.setItem('lastQuestion', JSON.stringify(payload))
+            // notify same-tab listeners
+            window.dispatchEvent(new Event('lastQuestionUpdated'))
         } catch {
           console.error('Error saving question to localStorage')
         }

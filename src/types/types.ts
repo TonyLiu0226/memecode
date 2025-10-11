@@ -11,6 +11,12 @@ export enum Difficulties {
     HARD = 'HARD'
 }
 
+export const DifficultyColors = new Map<string, string>([
+    ['Easy', 'green'],
+    ['Medium', 'yellow'],
+    ['Hard', 'red']
+])
+
 export type UserResult = {
     id: string,
     memes_left: number,
