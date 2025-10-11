@@ -9,6 +9,8 @@ import { LeetcodeUsernameResult, Difficulties, UserResult } from '@/types/types'
 export default function Settings() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [leetcodeCookie, setLeetcodeCookie] = useState('')
+  const [leetcodeCsrfToken, setLeetcodeCsrfToken] = useState('')
   const [leetcodeUsername, setLeetcodeUsername] = useState('')
   const [difficulties, setDifficulties] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
@@ -29,10 +31,14 @@ export default function Settings() {
             const savedDifficulties = localStorage.getItem('difficulties') || '[]'
             const result = await supabase.from('lc_usernames').select('*').eq('id', user.id)
             const lc_username = result.data?.[0] as LeetcodeUsernameResult
+            setLeetcodeCookie(lc_username.lc_session || '')
+            setLeetcodeCsrfToken(lc_username.csrftoken || '')
             setLeetcodeUsername(lc_username.lc_username || '')
             setDifficulties(JSON.parse(savedDifficulties))
         } catch (error) {
             console.error('Error loading user preferences:', error);
+            setLeetcodeCookie('');
+            setLeetcodeCsrfToken('');
             setLeetcodeUsername('');
             setDifficulties([]);
         }
@@ -71,6 +77,8 @@ export default function Settings() {
     try {
       await supabase.from('lc_usernames').upsert({
         id: user.id,
+        lc_session: leetcodeCookie,
+        csrftoken: leetcodeCsrfToken,
         lc_username: leetcodeUsername
       })
       localStorage.setItem('difficulties', JSON.stringify(difficulties))
@@ -107,10 +115,9 @@ export default function Settings() {
                 <h2 className="text-lg font-medium text-gray-900 mb-4">
                   Profile Settings
                 </h2>
-                
-                <div className="space-y-6">
-                  {/* LeetCode Username */}
-                  <div>
+
+                {/* LeetCode Username */}
+                <div>
                     <label htmlFor="leetcode-username" className="block text-lgfont-medium text-gray-700 mb-2">
                       LeetCode Username
                     </label>
@@ -120,6 +127,37 @@ export default function Settings() {
                       value={leetcodeUsername}
                       onChange={(e) => setLeetcodeUsername(e.target.value)}
                       placeholder="Enter your LeetCode username"
+                      className="w-full text-gray-900 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                
+                <div className="space-y-6">
+                  {/* LeetCode Cookie */}
+                  <div>
+                    <label htmlFor="leetcode-username" className="block text-lgfont-medium text-gray-700 mb-2">
+                      LeetCode Cookie
+                    </label>
+                    <input
+                      id="leetcode-username"
+                      type="text"
+                      value={leetcodeCookie}
+                      onChange={(e) => setLeetcodeCookie(e.target.value)}
+                      placeholder="Enter your LeetCode cookie string"
+                      className="w-full text-gray-900 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  {/* LeetCode CSRF Token */}
+                  <div>
+                    <label htmlFor="leetcode-username" className="block text-lgfont-medium text-gray-700 mb-2">
+                      LeetCode CSRF Token
+                    </label>
+                    <input
+                      id="leetcode-username"
+                      type="text"
+                      value={leetcodeCsrfToken}
+                      onChange={(e) => setLeetcodeCsrfToken(e.target.value)}
+                      placeholder="Enter your LeetCode csrf token"
                       className="w-full text-gray-900 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>

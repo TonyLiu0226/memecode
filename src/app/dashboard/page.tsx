@@ -1,13 +1,13 @@
+
 import { createClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import QuestionTracker from '@/components/trackers/QuestionTracker'
 import ProgressTracker from '@/components/trackers/ProgressTracker'
 import MemeTracker from '@/components/trackers/MemeTracker'
-import { UserResult } from '@/types/types'
+import { generateQuestion } from '@/app/actions'
 
 export default async function Dashboard() {
   const supabase = await createClient()
-  
   const { data: { user } } = await supabase.auth.getUser()
   
   if (!user) {
@@ -30,9 +30,13 @@ export default async function Dashboard() {
             Dashboard
           </h1>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            <QuestionTracker username={user.id} data={userdata} />
+            <QuestionTracker username={user.id} data={userdata} lc_session={username.lc_session} csrftoken={username.csrftoken} generateQuestion={generateQuestion} />
             <ProgressTracker userdata={userdata} />
             <MemeTracker userdata={userdata} />
+          </div>
+          <div>
+            <h2>Question of the Day</h2>
+            {}
           </div>
         </div>
       </div>

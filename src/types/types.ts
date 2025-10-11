@@ -1,12 +1,14 @@
 export type LeetcodeUsernameResult = {
     id: string,
+    lc_session: string,
+    csrftoken: string,
     lc_username: string
 }
 
 export enum Difficulties {
-    EASY = 'Easy',
-    MEDIUM = 'Medium',
-    HARD = 'Hard'
+    EASY = 'EASY',
+    MEDIUM = 'MEDIUM',
+    HARD = 'HARD'
 }
 
 export type UserResult = {
@@ -18,4 +20,9 @@ export type UserResult = {
     total_ez_solved: number,
     total_md_solved: number,
     total_hd_solved: number
+}
+
+export type TopicTag = {
+    name: string,
+    slug: string
 }
