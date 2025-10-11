@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "LeetCode Token Helper",
+  "version": "0.1.0",
+  "description": "Display LEETCODE_SESSION and csrftoken from leetcode.com for copy/paste.",
+  "permissions": [
+    "cookies",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://leetcode.com/*",
+    "https://*.leetcode.com/*",
+    "https://leetcode.cn/*",
+    "https://*.leetcode.cn/*"
+  ],
+  "action": {
+    "default_title": "LeetCode Tokens",
+    "default_popup": "popup.html"
+  }
+}
+
+

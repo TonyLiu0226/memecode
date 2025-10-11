@@ -1,0 +1,95 @@
+/* global chrome */
+(function () {
+  const sessionEl = document.getElementById('session');
+  const csrfEl = document.getElementById('csrf');
+  const copySessionBtn = document.getElementById('copy-session');
+  const copyCsrfBtn = document.getElementById('copy-csrf');
+  const statusEl = document.getElementById('status');
+
+  const candidateUrls = [
+    'https://leetcode.com',
+    'https://www.leetcode.com',
+    // Uncomment to support China site; ensure host_permissions include leetcode.cn
+    'https://leetcode.cn',
+    'https://www.leetcode.cn'
+  ];
+
+  const cookiesApi = (typeof browser !== 'undefined' && browser.cookies)
+    ? browser.cookies
+    : (typeof chrome !== 'undefined' ? chrome.cookies : undefined);
+
+  function getCookie(details) {
+    if (!cookiesApi) return Promise.resolve(undefined);
+    // Firefox: browser.cookies.get returns a Promise
+    if (typeof browser !== 'undefined' && cookiesApi === browser.cookies) {
+      return cookiesApi.get(details);
+    }
+    // Chrome: chrome.cookies.get uses a callback
+    return new Promise((resolve, reject) => {
+      try {
+        cookiesApi.get(details, (cookie) => {
+          if (chrome && chrome.runtime && chrome.runtime.lastError) {
+            reject(chrome.runtime.lastError);
+          } else {
+            resolve(cookie);
+          }
+        });
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
+
+  async function getCookieByName(name) {
+    for (const url of candidateUrls) {
+      try {
+        const cookie = await getCookie({ url, name });
+        if (cookie && cookie.value) return cookie.value;
+      } catch (err) {
+        // Ignore and continue trying other candidate URLs
+      }
+    }
+    return '';
+  }
+
+  async function loadTokens() {
+    const [session, csrf] = await Promise.all([
+      getCookieByName('LEETCODE_SESSION'),
+      getCookieByName('csrftoken')
+    ]);
+    sessionEl.value = session || '';
+    csrfEl.value = csrf || '';
+    if (!session && !csrf) {
+      setStatus('No cookies found. Log in at leetcode.com and reopen.', true);
+    } else if (!session || !csrf) {
+      setStatus('Some cookies missing. Ensure you are logged in.', true);
+    } else {
+      setStatus('Tokens loaded. Use the copy buttons below.');
+    }
+  }
+
+  function setStatus(message, warn = false) {
+    statusEl.textContent = message;
+    statusEl.style.color = warn ? '#92400e' : '#065f46';
+  }
+
+  async function copy(text, label) {
+    try {
+      await navigator.clipboard.writeText(text);
+      setStatus(`${label} copied to clipboard.`);
+    } catch (err) {
+      setStatus(`Failed to copy ${label}.`, true);
+    }
+  }
+
+  copySessionBtn.addEventListener('click', () => copy(sessionEl.value, 'Session'));
+  copyCsrfBtn.addEventListener('click', () => copy(csrfEl.value, 'CSRF token'));
+
+  document.addEventListener('DOMContentLoaded', loadTokens);
+  // In case DOMContentLoaded already fired by the time this script runs
+  if (document.readyState === 'interactive' || document.readyState === 'complete') {
+    loadTokens();
+  }
+})();
+
+
