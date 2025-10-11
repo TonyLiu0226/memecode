@@ -4,8 +4,24 @@ import DifficultyChip from './chips/DifficultyChip'
 import TopicChip from './chips/TopicChip'
 import { useState, useEffect } from 'react'
 import { DifficultyColors } from '@/types/types'
+import CheckSolvedButton from './buttons/CheckSolvedButton'
 
-export default function QuestionInfo() {
+export default function QuestionInfo(props: {
+    username: string
+}) {
+    const handleResult = (memeURL: { url: string, type: string }) => {
+        if (typeof window === 'undefined') return
+        try {
+            localStorage.setItem('memeURL', JSON.stringify(memeURL.url))
+            localStorage.setItem('memeType', JSON.stringify(memeURL.type))
+            // notify same-tab listeners
+            window.dispatchEvent(new Event('memeTypeUpdated'))
+            window.dispatchEvent(new Event('memeURLUpdated'))
+        } catch {
+          console.error('Error saving memeURL to localStorage')
+        }
+    }
+    
     const [question, setQuestion] = useState<{ title?: string; titleSlug?: string; difficulty?: string; isPaidOnly?: boolean; status?: string; topicTags?: TopicTag[] | null, acRate?: number } | null>(null)
     useEffect(() => {
         const read = () => {
@@ -44,6 +60,7 @@ export default function QuestionInfo() {
             
             <p className="text-md font-bold text-gray-900 mb-2">Acceptance Rate: {question.acRate?.toFixed(2)}%</p>
             <a className="text-md font-medium text-teal-900 mb-2" href={`https://leetcode.com/problems/${question.titleSlug}`}>View Question</a>
+            <CheckSolvedButton buttonText="I've solved this question!" username={props.username} questionTitle={question.title || ''} onResult={handleResult} />
         </div>
     )
 }

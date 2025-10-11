@@ -6,6 +6,7 @@ import ProgressTracker from '@/components/trackers/ProgressTracker'
 import MemeTracker from '@/components/trackers/MemeTracker'
 import { generateQuestion } from '@/app/actions'
 import QuestionInfo from '@/components/QuestionInfo'
+import MemeViewer from '@/components/MemeViewer'
 
 export default async function Dashboard() {
   const supabase = await createClient()
@@ -36,7 +37,11 @@ export default async function Dashboard() {
             <MemeTracker userdata={userdata} />
           </div>
           <div className="align-center justify-center mt-10 w-full">
-            <QuestionInfo />
+            <QuestionInfo username={username.lc_username} />
+          </div>
+          <div className="align-center justify-center mt-10 w-full">
+
+            <MemeViewer type="video" />
           </div>
         </div>
       </div>
