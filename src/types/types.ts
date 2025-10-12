@@ -2,7 +2,9 @@ export type LeetcodeUsernameResult = {
     id: string,
     lc_session: string,
     csrftoken: string,
-    lc_username: string
+    lc_username: string,
+    difficulties?: string[] | null,
+    meme_preferences?: string[] | null
 }
 
 export enum Difficulties {
@@ -10,12 +12,6 @@ export enum Difficulties {
     MEDIUM = 'MEDIUM',
     HARD = 'HARD'
 }
-
-export const DifficultyColors = new Map<string, string>([
-    ['Easy', 'green'],
-    ['Medium', 'yellow'],
-    ['Hard', 'red']
-])
 
 export type UserResult = {
     id: string,
@@ -31,4 +27,24 @@ export type UserResult = {
 export type TopicTag = {
     name: string,
     slug: string
+}
+
+export type UserPreferences = {
+    id: string,
+    difficulties: string[],
+    meme_preferences: string[]
+}
+
+export function getDifficultyChipClasses(difficulty?: string): string {
+    if (difficulty === 'Easy') return 'border-green-400 text-green-700'
+    if (difficulty === 'Medium') return 'border-yellow-400 text-yellow-700'
+    if (difficulty === 'Hard') return 'border-red-400 text-red-700'
+    return 'border-gray-300 text-gray-700'
+}
+
+export function getDifficultyBgClass(difficulty?: string): string {
+    if (difficulty === 'Easy') return 'bg-green-100'
+    if (difficulty === 'Medium') return 'bg-yellow-100'
+    if (difficulty === 'Hard') return 'bg-red-100'
+    return 'bg-gray-100'
 }

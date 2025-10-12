@@ -7,6 +7,7 @@ export default function QuestionTracker(props: {
     lc_session: string,
     csrftoken: string,
     data: UserResult
+    difficulties?: string[]
     generateQuestion: (args: { lc_session: string; csrftoken: string; difficulties: string[] }) => Promise<{ title?: string; titleSlug?: string; difficulty?: string; isPaidOnly?: boolean; status?: string; topicTags?: TopicTag[] | null, acRate?: number }>
 }) {
     const handleResult = (question: { title?: string; titleSlug?: string; difficulty?: string; isPaidOnly?: boolean; status?: string; topicTags?: TopicTag[] | null, acRate?: number }) => {
@@ -33,7 +34,7 @@ export default function QuestionTracker(props: {
             <div className={`bg-blue-50 p-4 rounded-lg`}>
               <h3 className={`text-lg font-medium text-blue-900`}>Today&apos;s Challenge</h3>
               <p className={`text-blue-700 mt-2`}>Complete your daily LeetCode problem to unlock memes!</p>
-              <NewQuestionButton buttonText="Get New Question" username={props.username} data={props.data} lc_session={props.lc_session} csrftoken={props.csrftoken} generateQuestion={props.generateQuestion} onResult={handleResult}/>
+              <NewQuestionButton buttonText="Get New Question" username={props.username} data={props.data} lc_session={props.lc_session} csrftoken={props.csrftoken} difficulties={props.difficulties} generateQuestion={props.generateQuestion} onResult={handleResult}/>
             </div>
     )
 }

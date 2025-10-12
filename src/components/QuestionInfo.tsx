@@ -1,9 +1,9 @@
 'use client'
 import { TopicTag } from '@/types/types'
 import DifficultyChip from './chips/DifficultyChip'
+import { getDifficultyBgClass } from '@/types/types'
 import TopicChip from './chips/TopicChip'
 import { useState, useEffect } from 'react'
-import { DifficultyColors } from '@/types/types'
 import CheckSolvedButton from './buttons/CheckSolvedButton'
 
 export default function QuestionInfo(props: {
@@ -45,8 +45,9 @@ export default function QuestionInfo(props: {
         }
     }, [])
     if (!question) return null
+    const bgClass = getDifficultyBgClass(question.difficulty)
     return (
-        <div className={`mt-10 mb-10 flex flex-col align-center justify-center w-fit mx-auto bg-${question.difficulty && DifficultyColors.get(question.difficulty)}-300`}>
+        <div className={`mt-10 mb-10 flex px-10 py-5 rounded-md flex-col align-center justify-center w-fit mx-auto ${bgClass}`}>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">{question.title}</h1>
             <div>
                 <DifficultyChip difficulty={question.difficulty} />

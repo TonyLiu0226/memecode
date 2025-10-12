@@ -3,8 +3,8 @@
 import { createClient as createBrowserClient } from '@/lib/supabase-client'
 import { useEffect, useState } from 'react'
 import { User } from '@supabase/supabase-js'
-import { useRouter, redirect} from 'next/navigation'
-import { LeetcodeUsernameResult, Difficulties, UserResult } from '@/types/types'
+import { redirect} from 'next/navigation'
+import { LeetcodeUsernameResult } from '@/types/types'
 
 export default function Settings() {
   const [user, setUser] = useState<User | null>(null)
@@ -13,10 +13,10 @@ export default function Settings() {
   const [leetcodeCsrfToken, setLeetcodeCsrfToken] = useState('')
   const [leetcodeUsername, setLeetcodeUsername] = useState('')
   const [difficulties, setDifficulties] = useState<string[]>([])
+  const [memePreferences, setMemePreferences] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
   const supabase = createBrowserClient()
-  const router = useRouter()
 
   useEffect(() => {
     const getUser = async () => {
@@ -27,20 +27,21 @@ export default function Settings() {
       if (user) {
         console.log(user.id)
         try {
-            // Load user preferences from localStorage and supabase
-            const savedDifficulties = localStorage.getItem('difficulties') || '[]'
             const result = await supabase.from('lc_usernames').select('*').eq('id', user.id)
             const lc_username = result.data?.[0] as LeetcodeUsernameResult
             setLeetcodeCookie(lc_username.lc_session || '')
             setLeetcodeCsrfToken(lc_username.csrftoken || '')
             setLeetcodeUsername(lc_username.lc_username || '')
-            setDifficulties(JSON.parse(savedDifficulties))
+            // Load user preferences from lc_usernames
+            setDifficulties((lc_username?.difficulties as string[] | undefined) || [])
+            setMemePreferences((lc_username?.meme_preferences as string[] | undefined) || [])
         } catch (error) {
             console.error('Error loading user preferences:', error);
             setLeetcodeCookie('');
             setLeetcodeCsrfToken('');
             setLeetcodeUsername('');
             setDifficulties([]);
+            setMemePreferences([]);
         }
         
       } else {
@@ -58,7 +59,15 @@ export default function Settings() {
     )
 
     return () => subscription.unsubscribe()
-  }, [supabase.auth])
+  }, [supabase])
+
+  const handleMemePreferenceChange = (memePreference: string) => {
+    setMemePreferences(prev => 
+      prev.includes(memePreference) 
+        ? prev.filter(m => m !== memePreference)
+        : [...prev, memePreference]
+    )
+  }
 
   const handleDifficultyChange = (difficulty: string) => {
     setDifficulties(prev => 
@@ -79,10 +88,10 @@ export default function Settings() {
         id: user.id,
         lc_session: leetcodeCookie,
         csrftoken: leetcodeCsrfToken,
-        lc_username: leetcodeUsername
+        lc_username: leetcodeUsername,
+        difficulties: difficulties,
+        meme_preferences: memePreferences
       })
-      localStorage.setItem('difficulties', JSON.stringify(difficulties))
-      
       setMessage('Settings saved successfully!')
       setTimeout(() => setMessage(''), 3000)
     } catch {
@@ -180,6 +189,28 @@ export default function Settings() {
                             className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                           />
                           <span className="ml-2 text-sm text-gray-700">{difficulty}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Meme Preference */}
+                  <div>
+                    <label className="block text-lg font-medium text-gray-700 mb-2">
+                      Meme Format Preference
+                    </label>
+                    <h3 className="text-sm text-gray-500 mb-3">
+                      Would you like to see images or videos?
+                    </h3>
+                    <div className="space-y-2">
+                      {['Images', 'Videos'].map((memePreference) => (
+                        <label key={memePreference} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={memePreferences.includes(memePreference.toLowerCase())}
+                            onChange={() => handleMemePreferenceChange(memePreference.toLowerCase())}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          />
+                          <span className="ml-2 text-sm text-gray-700">{memePreference}</span>
                         </label>
                       ))}
                     </div>

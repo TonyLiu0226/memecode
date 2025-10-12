@@ -32,7 +32,7 @@ export default async function Dashboard() {
             Dashboard
           </h1>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            <QuestionTracker username={user.id} data={userdata} lc_session={username.lc_session} csrftoken={username.csrftoken} generateQuestion={generateQuestion} />
+            <QuestionTracker username={user.id} data={userdata} lc_session={username.lc_session} csrftoken={username.csrftoken} difficulties={(username?.difficulties as string[] | undefined) || []} generateQuestion={generateQuestion} />
             <ProgressTracker userdata={userdata} />
             <MemeTracker userdata={userdata} />
           </div>
