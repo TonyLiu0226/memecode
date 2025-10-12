@@ -48,3 +48,13 @@ export function getDifficultyBgClass(difficulty?: string): string {
     if (difficulty === 'Hard') return 'bg-red-100'
     return 'bg-gray-100'
 }
+
+export type GeneratedQuestion = {
+    title?: string
+    titleSlug?: string
+    difficulty?: string
+    isPaidOnly?: boolean
+    status?: string
+    topicTags?: TopicTag[] | null
+    acRate?: number
+}
