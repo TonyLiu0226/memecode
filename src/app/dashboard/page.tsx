@@ -37,11 +37,11 @@ export default async function Dashboard() {
             <MemeTracker userdata={userdata} />
           </div>
           <div className="align-center justify-center mt-10 w-full">
-            <QuestionInfo username={username.lc_username} />
+            <QuestionInfo username={username.lc_username} mediaType={username.meme_preferences as string[]} />
           </div>
           <div className="align-center justify-center mt-10 w-full">
 
-            <MemeViewer type="video" />
+            <MemeViewer />
           </div>
         </div>
       </div>

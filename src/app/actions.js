@@ -60,8 +60,19 @@ export async function checkSolved(params) {
     }
 }
 
-export async function getMeme() {
-    const url = new URL(`https://api.humorapi.com/memes/random?media-type=video&max-age-days=364`);
+export async function getMeme(params) {
+    const { mediaType } = params || {};
+    if (!mediaType) {
+        return { error: 'ERROR: meme formattype not set in profile. Please go to the settings tab and ensure you have selected at least one meme format type.' };
+    }
+
+    //if both image and video are checked, select one random type
+    const memeType = Array.isArray(mediaType) && mediaType.length > 0
+        ? mediaType[Math.floor(Math.random() * mediaType.length)]
+        : undefined;
+    
+    const url = new URL(`https://api.humorapi.com/memes/random?media-type=${memeType.slice(0, -1)}&max-age-days=364`);
+    console.log(url.toString());
     const res = await fetch(url.toString(), {
         method: 'GET',
         headers: {
@@ -74,6 +85,6 @@ export async function getMeme() {
         return { url: data.url, type: data.type };
     }
     else {
-        throw new Error('No meme found');
+        return { error: 'No meme found' };
     }
 }

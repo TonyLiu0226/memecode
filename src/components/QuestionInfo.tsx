@@ -8,17 +8,35 @@ import CheckSolvedButton from './buttons/CheckSolvedButton'
 
 export default function QuestionInfo(props: {
     username: string
+    mediaType: string[]
 }) {
-    const handleResult = (memeURL: { url: string, type: string }) => {
+    const handleResult = (memeURL: { url: string, type: string } | { error: string }) => {
         if (typeof window === 'undefined') return
         try {
-            localStorage.setItem('memeURL', JSON.stringify(memeURL.url))
-            localStorage.setItem('memeType', JSON.stringify(memeURL.type))
-            // notify same-tab listeners
-            window.dispatchEvent(new Event('memeTypeUpdated'))
-            window.dispatchEvent(new Event('memeURLUpdated'))
+            if ('error' in memeURL) {
+                localStorage.removeItem('memeURL')
+                localStorage.removeItem('memeType')
+                localStorage.setItem('memeError', JSON.stringify(memeURL.error))
+                window.dispatchEvent(new Event('memeErrorUpdated'))
+                window.dispatchEvent(new Event('memeURLUpdated'))
+                window.dispatchEvent(new Event('memeTypeUpdated'))
+            }
+            else {
+                localStorage.setItem('memeURL', JSON.stringify(memeURL.url))
+                localStorage.setItem('memeType', JSON.stringify(memeURL.type))
+                localStorage.removeItem('memeError')
+                window.dispatchEvent(new Event('memeErrorUpdated'))
+                window.dispatchEvent(new Event('memeURLUpdated'))
+                window.dispatchEvent(new Event('memeTypeUpdated'))
+            }
         } catch (error) {
-          console.error('Error saving memeURL to localStorage', error)
+          localStorage.removeItem('memeURL')
+          localStorage.removeItem('memeType')
+          localStorage.setItem('memeError', JSON.stringify(error))
+          window.dispatchEvent(new Event('memeErrorUpdated'))
+          window.dispatchEvent(new Event('memeURLUpdated'))
+          window.dispatchEvent(new Event('memeTypeUpdated'))
+          console.error('Error saving meme to localStorage', error)
         }
     }
     
@@ -74,7 +92,7 @@ export default function QuestionInfo(props: {
             
             <p className="text-md font-bold text-gray-900 mb-2">Acceptance Rate: {question.acRate?.toFixed(2)}%</p>
             <a className="text-md font-medium text-teal-900 mb-2" href={`https://leetcode.com/problems/${question.titleSlug}`}>View Question</a>
-            <CheckSolvedButton buttonText="I've solved this question!" username={props.username} questionTitle={question.title || ''} onResult={handleResult} />
+            <CheckSolvedButton buttonText="I've solved this question!" username={props.username} questionTitle={question.title || ''} mediaType={props.mediaType} onResult={handleResult} />
         </div>
     )
 }
