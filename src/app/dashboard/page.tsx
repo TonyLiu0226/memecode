@@ -41,7 +41,7 @@ export default async function Dashboard() {
           </div>
           <div className="align-center justify-center mt-10 w-full">
 
-            <MemeViewer />
+            <MemeViewer mediaType={username.meme_preferences as string[]} />
           </div>
         </div>
       </div>
