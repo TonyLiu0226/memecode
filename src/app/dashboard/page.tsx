@@ -7,6 +7,7 @@ import MemeTracker from '@/components/trackers/MemeTracker'
 import { generateQuestion } from '@/app/actions'
 import QuestionInfo from '@/components/QuestionInfo'
 import MemeViewer from '@/components/MemeViewer'
+import { getUserDataById, getLcUsernameById } from '@/app/supabase'
 
 export default async function Dashboard() {
   const supabase = await createClient()
@@ -16,13 +17,10 @@ export default async function Dashboard() {
     redirect('/')
   }
 
-  const { data: userdata, error: userdataError } = await supabase.from('users').select('*').eq('id', user.id).single()
-  const { data: username, error: usernameError } = await supabase.from('lc_usernames').select('*').eq('id', user.id).single()
+  const userdata = await getUserDataById(supabase, user.id)
+  const username = await getLcUsernameById(supabase, user.id)
   
-  if (userdataError || usernameError) {
-    console.error(userdataError || usernameError)
-    redirect('/')
-  }
+  if (!userdata || !username) redirect('/')
 
   return (
     <div className="min-h-screen bg-gray-50">

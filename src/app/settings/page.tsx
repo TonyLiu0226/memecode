@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import { redirect} from 'next/navigation'
 import { LeetcodeUsernameResult } from '@/types/types'
+import { getAuthUser, getLcUsernameById, upsertLcUsernameWithPrefs } from '@/app/supabase'
 
 export default function Settings() {
   const [user, setUser] = useState<User | null>(null)
@@ -20,15 +21,14 @@ export default function Settings() {
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const user = await getAuthUser(supabase)
       setUser(user)
       setLoading(false)
       
       if (user) {
         console.log(user.id)
         try {
-            const result = await supabase.from('lc_usernames').select('*').eq('id', user.id)
-            const lc_username = result.data?.[0] as LeetcodeUsernameResult
+            const lc_username = await getLcUsernameById(supabase, user.id) as LeetcodeUsernameResult
             setLeetcodeCookie(lc_username.lc_session || '')
             setLeetcodeCsrfToken(lc_username.csrftoken || '')
             setLeetcodeUsername(lc_username.lc_username || '')
@@ -84,7 +84,7 @@ export default function Settings() {
     setMessage('')
     
     try {
-      await supabase.from('lc_usernames').upsert({
+      await upsertLcUsernameWithPrefs(supabase, {
         id: user.id,
         lc_session: leetcodeCookie,
         csrftoken: leetcodeCsrfToken,
