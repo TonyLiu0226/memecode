@@ -8,6 +8,8 @@ body {
   justify-content: center;
   align-items: center;
   height: 100vh;
+  background-image: url('../public/file.svg');
+  background-size: cover;
 }
 
 .container {

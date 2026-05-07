@@ -1,5 +1,7 @@
-const ALARM_NAME = 'checkLeetCodeStatus';
-const CHECK_INTERVAL_MINUTES = 1;
+import { EASY_LEETCODE_UNLOCK_TIME, MEDIUM_LEETCODE_UNLOCK_TIME, HARD_LEETCODE_UNLOCK_TIME, ALARM_NAME, CHECK_INTERVAL_MINUTES } from "./constants.js";
+
+// Compatibility layer for Chrome/Firefox
+const browser = globalThis.browser || globalThis.chrome;
 
 let isSolvedToday = false;
 let stringencyLevel = '1';
@@ -75,6 +77,8 @@ async function checkLeetCodeStatus() {
       body: JSON.stringify({
         query: `query getACSubmissions ($username: String!, $limit: Int) {
           recentAcSubmissionList(username: $username, limit: $limit) {
+            title
+            titleSlug
             timestamp
           }
         }`,
@@ -87,11 +91,41 @@ async function checkLeetCodeStatus() {
 
     const submissions = recentSubData?.data?.recentAcSubmissionList;
     if (submissions && submissions.length > 0) {
-      const lastTimestamp = parseInt(submissions[0].timestamp, 10) * 1000;
+      const submission = submissions[0];
+      const titleSlug = submission.titleSlug;
+      const lastTimestamp = parseInt(submission.timestamp) * 1000;
+
+      const difficulty = await fetch(`https://leetcode.com/graphql`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          query: `query selectProblem ($titleSlug: String!) {
+            question(titleSlug: $titleSlug) {
+              difficulty
+            }
+          }`,
+          variables: { titleSlug }
+        })
+      });
+      const difficultyData = await difficulty.json();
 
       const now = new Date();
-      //24 hours prior to now
-      const startOfDay = now.getTime() - (24 * 60 * 60 * 1000);
+      let startOfDay;
+      switch (difficultyData?.data?.question?.difficulty) {
+        case 'Easy': //6 hours for easy
+          startOfDay = now.getTime() - EASY_LEETCODE_UNLOCK_TIME;
+          break;
+        case 'Medium': //24 hours for medium
+          startOfDay = now.getTime() - MEDIUM_LEETCODE_UNLOCK_TIME;
+          break;
+        case 'Hard': //72 hours for hard
+          startOfDay = now.getTime() - HARD_LEETCODE_UNLOCK_TIME;
+          break;
+        default:
+          startOfDay = now.getTime();
+      }
 
       if (lastTimestamp >= startOfDay) {
         setSolvedStatus(true);
