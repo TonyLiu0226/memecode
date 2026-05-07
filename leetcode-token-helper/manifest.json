@@ -2,21 +2,32 @@
   "manifest_version": 3,
   "name": "LeetCode Token Helper",
   "version": "0.1.0",
-  "description": "Display LEETCODE_SESSION and csrftoken from leetcode.com for copy/paste.",
+  "description": "Motivate yourself to complete your leetcode grind every day!",
   "permissions": [
     "cookies",
-    "storage"
+    "storage",
+    "webRequest",
+    "webRequestBlocking",
+    "alarms"
   ],
   "host_permissions": [
     "https://leetcode.com/*",
     "https://*.leetcode.com/*",
     "https://leetcode.cn/*",
-    "https://*.leetcode.cn/*"
+    "https://*.leetcode.cn/*",
+    "<all_urls>"
+  ],
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["blocked.html", "blocked.css"],
+      "matches": ["<all_urls>"]
+    }
   ],
   "action": {
     "default_title": "LeetCode Tokens",
     "default_popup": "popup.html"
   }
 }
-
-

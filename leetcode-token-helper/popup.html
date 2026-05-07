@@ -8,6 +8,23 @@
 </head>
 <body>
   <div class="container">
+    <h1>Productivity Blocker</h1>
+    <div id="productivity-status" class="productivity-status blocked">Status: Blocked</div>
+    <button id="check-status-btn" class="secondary-btn">Check Status Now</button>
+
+    <div class="section stringency-section">
+      <h3>Stringency Level</h3>
+      <select id="stringency-level">
+        <option value="1">Level 1: Block Adult Sites</option>
+        <option value="2">Level 2: Block Adult & Social Media</option>
+        <option value="3">Level 3: Block Adult, Social & Entertainment</option>
+        <option value="4">Level 4: Block ALL except LeetCode</option>
+      </select>
+      <p class="hint">Higher levels block more distractions.</p>
+    </div>
+
+    <hr class="divider" />
+
     <h1>LeetCode Tokens</h1>
     <div class="section">
       <label for="session">LEETCODE_SESSION</label>
@@ -23,7 +40,5 @@
     <p class="hint">Make sure you're logged in at leetcode.com, then open this popup.</p>
   </div>
   <script src="popup.js"></script>
-  </body>
-  </html>
-
-
+</body>
+</html>

@@ -1,10 +1,16 @@
 /* global chrome */
 (function () {
+  // Token UI elements
   const sessionEl = document.getElementById('session');
   const csrfEl = document.getElementById('csrf');
   const copySessionBtn = document.getElementById('copy-session');
   const copyCsrfBtn = document.getElementById('copy-csrf');
   const statusEl = document.getElementById('status');
+
+  // Blocker UI elements
+  const prodStatusEl = document.getElementById('productivity-status');
+  const checkStatusBtn = document.getElementById('check-status-btn');
+  const stringencyEl = document.getElementById('stringency-level');
 
   const candidateUrls = [
     'https://leetcode.com',
@@ -20,11 +26,9 @@
 
   function getCookie(details) {
     if (!cookiesApi) return Promise.resolve(undefined);
-    // Firefox: browser.cookies.get returns a Promise
     if (typeof browser !== 'undefined' && cookiesApi === browser.cookies) {
       return cookiesApi.get(details);
     }
-    // Chrome: chrome.cookies.get uses a callback
     return new Promise((resolve, reject) => {
       try {
         cookiesApi.get(details, (cookie) => {
@@ -46,7 +50,7 @@
         const cookie = await getCookie({ url, name });
         if (cookie && cookie.value) return cookie.value;
       } catch (err) {
-        // Ignore and continue trying other candidate URLs
+        // Ignore and continue
       }
     }
     return '';
@@ -82,14 +86,71 @@
     }
   }
 
+  // --- Blocker UI Logic ---
+
+  async function loadBlockerState() {
+    const data = await browser.storage.local.get(['isSolvedToday', 'stringencyLevel']);
+    updateStatusUI(data.isSolvedToday);
+    
+    if (data.stringencyLevel) {
+      stringencyEl.value = data.stringencyLevel;
+    }
+  }
+
+  function updateStatusUI(isSolved) {
+    if (isSolved) {
+      prodStatusEl.textContent = 'Status: Unblocked (Solved Today!)';
+      prodStatusEl.className = 'productivity-status unblocked';
+    } else {
+      prodStatusEl.textContent = 'Status: Blocked (Solve a problem!)';
+      prodStatusEl.className = 'productivity-status blocked';
+    }
+  }
+
+  stringencyEl.addEventListener('change', async (e) => {
+    const newLevel = e.target.value;
+    await browser.storage.local.set({ stringencyLevel: newLevel });
+  });
+
+  checkStatusBtn.addEventListener('click', () => {
+    checkStatusBtn.textContent = 'Checking...';
+    checkStatusBtn.disabled = true;
+    browser.runtime.sendMessage({ action: 'checkStatusNow' }).then(() => {
+      // Reload state after check
+      loadBlockerState().then(() => {
+        checkStatusBtn.textContent = 'Check Status Now';
+        checkStatusBtn.disabled = false;
+      });
+    }).catch(() => {
+      checkStatusBtn.textContent = 'Check Status Now';
+      checkStatusBtn.disabled = false;
+    });
+  });
+
+
+
+  // Listen for background state changes to keep UI in sync
+  browser.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local') {
+      if (changes.isSolvedToday !== undefined) {
+        updateStatusUI(changes.isSolvedToday.newValue);
+      }
+      if (changes.stringencyLevel !== undefined) {
+        stringencyEl.value = changes.stringencyLevel.newValue || '1';
+      }
+    }
+  });
+
   copySessionBtn.addEventListener('click', () => copy(sessionEl.value, 'Session'));
   copyCsrfBtn.addEventListener('click', () => copy(csrfEl.value, 'CSRF token'));
 
-  document.addEventListener('DOMContentLoaded', loadTokens);
-  // In case DOMContentLoaded already fired by the time this script runs
+  document.addEventListener('DOMContentLoaded', () => {
+    loadTokens();
+    loadBlockerState();
+  });
+  
   if (document.readyState === 'interactive' || document.readyState === 'complete') {
     loadTokens();
+    loadBlockerState();
   }
 })();
-
-

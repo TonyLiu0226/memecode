@@ -50,4 +50,54 @@ button:hover { background: #0ea5a3; }
   color: #666;
 }
 
+/* New UI Styles */
+.divider {
+  border: 0;
+  height: 1px;
+  background: #eee;
+  margin: 16px 0;
+}
 
+.productivity-status {
+  padding: 8px;
+  border-radius: 6px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 8px;
+}
+.productivity-status.blocked {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #f87171;
+}
+.productivity-status.unblocked {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #34d399;
+}
+
+.secondary-btn {
+  width: 100%;
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  margin-bottom: 16px;
+}
+.secondary-btn:hover {
+  background: #e2e8f0;
+}
+
+.stringency-section h3 {
+  font-size: 14px;
+  margin: 0 0 8px 0;
+}
+.stringency-section select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background-color: white;
+  margin-bottom: 8px;
+  font-family: inherit;
+  font-size: 13px;
+}
