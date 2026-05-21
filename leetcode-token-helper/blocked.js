@@ -1,7 +1,16 @@
 const browser = globalThis.browser || globalThis.chrome;
 
 function updateStatusCheck() {
-  browser.runtime.sendMessage({ action: 'checkStatusNow' }, (response) => {
+  browser.runtime.sendMessage({ action: 'checkStatusNow' }, async (response) => {
+    const data = await browser.storage.local.get(['isSolvedToday', 'expiryTime']);
+    if (data.isSolvedToday && data.expiryTime) {
+      //navigate user to url of the site that is blocked
+      const urlParams = new URLSearchParams(window.location.search);
+      const originalUrl = urlParams.get('url');
+      if (originalUrl) {
+        window.location.href = originalUrl;
+      }
+    }
   });
 }
 

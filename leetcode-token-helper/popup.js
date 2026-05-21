@@ -89,17 +89,25 @@
   // --- Blocker UI Logic ---
 
   async function loadBlockerState() {
-    const data = await browser.storage.local.get(['isSolvedToday', 'stringencyLevel']);
-    updateStatusUI(data.isSolvedToday);
+    const data = await browser.storage.local.get(['isSolvedToday', 'expiryTime', 'stringencyLevel', 'isCheckingStatus']);
+    updateStatusUI(data.isSolvedToday, data.expiryTime);
     
     if (data.stringencyLevel) {
       stringencyEl.value = data.stringencyLevel;
     }
+    
+    if (data.isCheckingStatus) {
+      checkStatusBtn.textContent = 'Checking...';
+      checkStatusBtn.disabled = true;
+    } else {
+      checkStatusBtn.textContent = 'Check Status Now';
+      checkStatusBtn.disabled = false;
+    }
   }
 
-  function updateStatusUI(isSolved) {
-    if (isSolved) {
-      prodStatusEl.textContent = 'Status: Unblocked (Solved Today!)';
+  function updateStatusUI(isSolved, expiryTime = null) {
+    if (isSolved && expiryTime) {
+      prodStatusEl.textContent = `Status: Unblocked until ${new Date(expiryTime).toLocaleString()}`;
       prodStatusEl.className = 'productivity-status unblocked';
     } else {
       prodStatusEl.textContent = 'Status: Blocked (Solve a problem!)';
@@ -113,18 +121,7 @@
   });
 
   checkStatusBtn.addEventListener('click', () => {
-    checkStatusBtn.textContent = 'Checking...';
-    checkStatusBtn.disabled = true;
-    browser.runtime.sendMessage({ action: 'checkStatusNow' }).then(() => {
-      // Reload state after check
-      loadBlockerState().then(() => {
-        checkStatusBtn.textContent = 'Check Status Now';
-        checkStatusBtn.disabled = false;
-      });
-    }).catch(() => {
-      checkStatusBtn.textContent = 'Check Status Now';
-      checkStatusBtn.disabled = false;
-    });
+    browser.runtime.sendMessage({ action: 'checkStatusNow' });
   });
 
 
@@ -133,10 +130,19 @@
   browser.storage.onChanged.addListener((changes, area) => {
     if (area === 'local') {
       if (changes.isSolvedToday !== undefined) {
-        updateStatusUI(changes.isSolvedToday.newValue);
+        updateStatusUI(changes.isSolvedToday.newValue, changes.expiryTime.newValue);
       }
       if (changes.stringencyLevel !== undefined) {
         stringencyEl.value = changes.stringencyLevel.newValue || '1';
+      }
+      if (changes.isCheckingStatus !== undefined) {
+        if (changes.isCheckingStatus.newValue) {
+          checkStatusBtn.textContent = 'Checking...';
+          checkStatusBtn.disabled = true;
+        } else {
+          checkStatusBtn.textContent = 'Check Status Now';
+          checkStatusBtn.disabled = false;
+        }
       }
     }
   });

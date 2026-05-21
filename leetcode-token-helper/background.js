@@ -44,17 +44,30 @@ browser.alarms.onAlarm.addListener((alarm) => {
   }
 });
 
+async function getLeetCodeCookies() {
+  if (browser.cookies && browser.cookies.getAll) {
+    try {
+      const cookies = await browser.cookies.getAll({ domain: "leetcode.com" });
+      return cookies.map(c => `${c.name}=${c.value}`).join('; ');
+    } catch(e) {
+      console.error(e);
+      return '';
+    }
+  }
+  return '';
+}
+
 async function checkLeetCodeStatus() {
+  await browser.storage.local.set({ isCheckingStatus: true });
   try {
+    const cookiesStr = await getLeetCodeCookies();
     // 1. Get username
-    const globalDataRes = await fetch('https://leetcode.com/graphql', {
+    const globalDataRes = await fetch('http://localhost:2019/extension/globalData', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        query: `query globalData { userStatus { username isSignedIn } }`
-      })
+      body: JSON.stringify({ cookiesStr })
     });
 
     if (!globalDataRes.ok) return;
@@ -69,22 +82,14 @@ async function checkLeetCodeStatus() {
     const username = globalData.data.userStatus.username;
 
     // 2. Get recent AC submissions
-    const recentSubRes = await fetch('https://leetcode.com/graphql', {
+    const recentSubRes = await fetch('http://localhost:2019/extension/recentAcSubmissions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        query: `query getACSubmissions ($username: String!, $limit: Int) {
-          recentAcSubmissionList(username: $username, limit: $limit) {
-            title
-            titleSlug
-            timestamp
-          }
-        }`,
-        variables: { username, limit: 1 }
-      })
+      body: JSON.stringify({ username, limit: 1, cookiesStr })
     });
+    console.log(recentSubRes)
 
     if (!recentSubRes.ok) return;
     const recentSubData = await recentSubRes.json();
@@ -95,55 +100,50 @@ async function checkLeetCodeStatus() {
       const titleSlug = submission.titleSlug;
       const lastTimestamp = parseInt(submission.timestamp) * 1000;
 
-      const difficulty = await fetch(`https://leetcode.com/graphql`, {
+      const difficulty = await fetch(`http://localhost:2019/extension/selectProblem`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          query: `query selectProblem ($titleSlug: String!) {
-            question(titleSlug: $titleSlug) {
-              difficulty
-            }
-          }`,
-          variables: { titleSlug }
-        })
+        body: JSON.stringify({ titleSlug, cookiesStr })
       });
       const difficultyData = await difficulty.json();
 
       const now = new Date();
-      let startOfDay;
+      let expiryTime;
       switch (difficultyData?.data?.question?.difficulty) {
         case 'Easy': //6 hours for easy
-          startOfDay = now.getTime() - EASY_LEETCODE_UNLOCK_TIME;
+          expiryTime = lastTimestamp + EASY_LEETCODE_UNLOCK_TIME;
           break;
         case 'Medium': //24 hours for medium
-          startOfDay = now.getTime() - MEDIUM_LEETCODE_UNLOCK_TIME;
+          expiryTime = lastTimestamp + MEDIUM_LEETCODE_UNLOCK_TIME;
           break;
         case 'Hard': //72 hours for hard
-          startOfDay = now.getTime() - HARD_LEETCODE_UNLOCK_TIME;
+          expiryTime = lastTimestamp + HARD_LEETCODE_UNLOCK_TIME;
           break;
         default:
-          startOfDay = now.getTime();
+          expiryTime = now;
       }
 
-      if (lastTimestamp >= startOfDay) {
-        setSolvedStatus(true);
+      if (expiryTime && expiryTime > now) {
+        setSolvedStatus(true, expiryTime);
       } else {
-        setSolvedStatus(false);
+        setSolvedStatus(false, null);
       }
     } else {
-      setSolvedStatus(false);
+      setSolvedStatus(false, null);
     }
 
   } catch (err) {
     console.error('Error checking LeetCode status:', err);
+  } finally {
+    await browser.storage.local.set({ isCheckingStatus: false });
   }
 }
 
-function setSolvedStatus(status) {
+function setSolvedStatus(status, expiryTime = null) {
   isSolvedToday = status;
-  browser.storage.local.set({ isSolvedToday: status });
+  browser.storage.local.set({ isSolvedToday: status, expiryTime: expiryTime });
 }
 
 // Listen to web requests
@@ -175,7 +175,7 @@ browser.webRequest.onBeforeRequest.addListener(
     }
 
     if (isBlocked) {
-      const blockedUrl = browser.runtime.getURL('blocked.html');
+      const blockedUrl = browser.runtime.getURL('blocked.html') + '?url=' + encodeURIComponent(details.url);
       return { redirectUrl: blockedUrl };
     }
 
